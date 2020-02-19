@@ -3,7 +3,7 @@
 
 EAPI=7
 
-inherit unpacker 
+inherit unpacker
 
 DEB_ARCH="all"
 
@@ -18,30 +18,34 @@ IUSE=""
 
 DEPEND=""
 RDEPEND="net-analyzer/monitoring-plugins
-         app-metrics/collectd[collectd_plugins_threshold]
-		 dev-python/cryptography
-		 dev-python/pynsca
-		 dev-python/msgpack
-		 <dev-python/pyyaml-4"
+		app-metrics/collectd[collectd_plugins_threshold]
+		dev-python/cryptography
+		dev-python/pynsca
+		dev-python/msgpack
+		<dev-python/pyyaml-4"
 BDEPEND=""
 
+PATCHES=(
+		"${FILESDIR}/WallarmAPIWriter-2to3.patch"
+)
+
 src_unpack() {
-        mkdir "${WORKDIR}/${P}" && cd "${WORKDIR}/${P}"
-        unpack_deb ${A}
+		mkdir "${WORKDIR}/${P}" && cd "${WORKDIR}/${P}"
+		unpack_deb ${A}
 }
 
 src_prepare() {
-        eapply_user
+		default
 
-        unpack usr/share/doc/${PN}/changelog.gz
+		unpack usr/share/doc/${PN}/changelog.gz
 		unpack usr/share/doc/${PN}/NEWS.Debian.gz
 		sed -i 's/<P/LoadPlugin python\n\n<P/' etc/collectd/collectd.conf.d/write_api.conf
 }
 
 src_install() {
-        dodoc usr/share/doc/${PN}/copyright
-        dodoc changelog
-        dodoc NEWS.Debian
+		dodoc usr/share/doc/${PN}/copyright
+		dodoc changelog
+		dodoc NEWS.Debian
 
 		insinto "/usr/$(get_libdir)"
 		doins -r usr/lib/nagios
