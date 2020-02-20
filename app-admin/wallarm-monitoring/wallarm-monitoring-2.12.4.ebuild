@@ -22,7 +22,7 @@ RDEPEND="net-analyzer/monitoring-plugins
 		dev-python/cryptography
 		dev-python/pynsca
 		dev-python/msgpack
-		<dev-python/pyyaml-4"
+		dev-python/pyyaml"
 BDEPEND=""
 
 PATCHES=(

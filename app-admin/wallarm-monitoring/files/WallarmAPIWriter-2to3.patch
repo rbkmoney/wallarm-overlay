@@ -1,103 +1,68 @@
 --- a/usr/lib/collectd/python/WallarmAPIWriter.py
 +++ b/usr/lib/collectd/python/WallarmAPIWriter.py
-@@ -22,19 +22,19 @@
- try:
-     import queue
  except:
 -    import Queue as queue
 +    import queue as queue
  import ssl
- try:
-     if sys.version_info < (2, 7, 7):
-         sys.path.insert(0, '/usr/lib/collectd/python')
-         import WallarmHttplib as httplib
+@@ -31,3 +31,3 @@ try:
      else:
 -        import httplib
 +        import http.client
  except:
-     import http.client as httplib
- import time
+@@ -36,3 +36,3 @@ import time
  import threading
 -import urlparse
 +import urllib.parse
  import yaml
- import socket
- import base64
-@@ -56,13 +56,13 @@
- except:
-     has_ssl_context = False
- 
+@@ -58,3 +58,3 @@ except:
+
 -    class WallarmHTTPSConnection(httplib.HTTPSConnection):
 +    class WallarmHTTPSConnection(http.client.HTTPSConnection):
          "This class adds certificate checking into SSL connections in old Python versions."
- 
-         def __init__(self, host, port=None, key_file=None, cert_file=None,
-                      strict=None, timeout=socket._GLOBAL_DEFAULT_TIMEOUT, ca_certs=None):
+@@ -64,3 +64,3 @@ except:
              self.ca_certs = ca_certs
 -            httplib.HTTPSConnection.__init__(self, host, port, key_file, cert_file,
 +            http.client.HTTPSConnection.__init__(self, host, port, key_file, cert_file,
                                       strict, timeout)
- 
-         def connect(self):
-@@ -223,9 +223,7 @@
-                     v.append(ds_fields)
- 
+@@ -225,5 +225,3 @@ class WallarmApiWriter(object):
                  self.types[type_name] = list(zip(
 -                    *map(
 -                        lambda n: n[:2], v
 -                    )
 +                    *[n[:2] for n in v]
                  ))
- 
-     def drop_creds(self):
-@@ -451,7 +449,7 @@
-     def get_env_extended(self, key):
-         val = environ.get(key)
+@@ -241,3 +239,3 @@ class WallarmApiWriter(object):
+             with open(self.config['api_conn_file']) as fo:
+-                api_creds = yaml.load(fo)
++                api_creds = yaml.safe_load(fo)
+                 # TODO (adanin): catch yaml.load exception too.
+@@ -453,3 +451,3 @@ class WallarmApiWriter(object):
          if val is not None:
 -            url = urlparse.urlparse(val)
 +            url = urllib.parse.urlparse(val)
              return url, self.get_auth_headers(url)
- 
-         val = environ.get("WALLARM_DONT_READ_ETC_ENV")
-@@ -463,12 +461,12 @@
-                     (etc_key, _, etc_val) = line.partition("=")
-                     if etc_key == key:
+@@ -465,3 +463,3 @@ class WallarmApiWriter(object):
                          file.close()
 -                        url = urlparse.urlparse(etc_val.rstrip())
 +                        url = urllib.parse.urlparse(etc_val.rstrip())
                          return url, self.get_auth_headers(url)
-             finally:
-                 if file is not None:
+@@ -470,3 +468,3 @@ class WallarmApiWriter(object):
                      file.close()
 -        return urlparse.urlparse(''), {}
 +        return urllib.parse.urlparse(''), {}
- 
-     def send_data(self, payload):
-         """
-@@ -502,7 +500,7 @@
-                         sslctx.verify_mode = ssl.CERT_REQUIRED
-                         sslctx.check_hostname = True
+
+@@ -504,3 +502,3 @@ class WallarmApiWriter(object):
                          sslctx.load_verify_locations(cafile=verify)
 -                    conn = httplib.HTTPSConnection(
 +                    conn = http.client.HTTPSConnection(
                          host, port,
-                         context=sslctx,
-                         timeout=self.config['send_timeout_secs']
-@@ -523,7 +521,7 @@
-                     host = proxyurl.hostname
-                     port_tun = port
+@@ -525,3 +523,3 @@ class WallarmApiWriter(object):
                      port = proxyurl.port
 -                conn = httplib.HTTPConnection(
 +                conn = http.client.HTTPConnection(
                      host, port,
-                     timeout=self.config['send_timeout_secs']
-                 )
-@@ -545,7 +543,7 @@
-                 conn.close()
-                 return False
- 
+@@ -547,3 +545,3 @@ class WallarmApiWriter(object):
+
 -        except (httplib.HTTPException, socket.timeout, ssl.SSLError) as e:
 +        except (http.client.HTTPException, socket.timeout, ssl.SSLError) as e:
              self.log(
-                 'warning',
-                 "{0}: Cannot send data to the API: {1}".format(
